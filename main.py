@@ -1,3 +1,131 @@
+import json
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
+
+# =========================
+# 기본 설정
+# =========================
+st.set_page_config(
+    page_title="뇌졸중 예측 실습실",
+    page_icon="🧠",
+    layout="wide",
+)
+
+DATA_URL = "https://raw.githubusercontent.com/ghdwlswn814/data/refs/heads/main/stroke.csv"
+
+RECORD_DIR = Path("내_기록")
+RECORD_FILE = RECORD_DIR / "뇌졸중_예측_실습실_기록.json"
+
+COLUMNS = [
+    "id",
+    "gender",
+    "age",
+    "hypertension",
+    "heart_disease",
+    "ever_married",
+    "work_type",
+    "Residence_type",
+    "avg_glucose_level",
+    "bmi",
+    "smoking_status",
+    "stroke",
+]
+
+
+# =========================
+# 기록 불러오기 / 저장하기
+# =========================
+def load_records():
+    default = {
+        "column_meanings": {column: "" for column in COLUMNS},
+        "source": "",
+    }
+
+    if not RECORD_FILE.exists():
+        return default
+
+    try:
+        with open(RECORD_FILE, "r", encoding="utf-8") as file:
+            saved = json.load(file)
+
+        default["column_meanings"].update(
+            saved.get("column_meanings", {})
+        )
+        default["source"] = saved.get("source", "")
+        return default
+
+    except (OSError, json.JSONDecodeError):
+        return default
+
+
+def save_records(column_meanings, source):
+    RECORD_DIR.mkdir(parents=True, exist_ok=True)
+
+    data = {
+        "column_meanings": column_meanings,
+        "source": source,
+    }
+
+    with open(RECORD_FILE, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+
+# =========================
+# 데이터 불러오기
+# =========================
+@st.cache_data
+def load_data():
+    data = pd.read_csv(
+        DATA_URL,
+        encoding="utf-8",
+    )
+    return data
+
+
+try:
+    df = load_data()
+except Exception as error:
+    st.error("데이터를 불러오지 못했습니다.")
+    st.code(str(error))
+    st.stop()
+
+
+# =========================
+# 저장된 교재 기록 불러오기
+# =========================
+records = load_records()
+
+
+# =========================
+# 제목
+# =========================
+st.title("🧠 뇌졸중 예측 실습실")
+
+st.write(
+    "뇌졸중(stroke) 여부가 기록된 데이터를 살펴보고 "
+    "이후 분류 모델을 실습하기 위한 데이터입니다."
+)
+
+
+# =========================
+# 숫자 카드
+# =========================
+total_people = len(df)
+column_count = len(df.columns)
+stroke_count = int((df["stroke"] == 1).sum())
+
+if total_people > 0:
+    stroke_ratio = stroke_count / total_people
+else:
+    stroke_ratio = 0
+
+
+st.subheader("데이터 한눈에 보기")
+
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric("전체 사람 수", f"{total_people:,}명")
@@ -126,3 +254,9 @@ if st.button("💾 내 기록 저장", type="primary"):
     st.success(
         "저장했습니다. "
         "내_기록/뇌졸중_예측_실습실_기록.json 파일에 기록되었습니다."
+    )
+
+
+st.caption(
+    "데이터 출처: ghdwlswn814/data의 stroke.csv"
+)
