@@ -78,11 +78,7 @@ def save_records(column_meanings, source):
 # =========================
 @st.cache_data
 def load_data():
-    data = pd.read_csv(
-        DATA_URL,
-        encoding="utf-8",
-    )
-    return data
+    return pd.read_csv(DATA_URL, encoding="utf-8")
 
 
 try:
@@ -121,7 +117,6 @@ if total_people > 0:
     stroke_ratio = stroke_count / total_people
 else:
     stroke_ratio = 0
-
 
 st.subheader("데이터 한눈에 보기")
 
@@ -193,19 +188,13 @@ edited_df = st.data_editor(
     hide_index=True,
     disabled=["열 이름", "값의 종류", "빈 값 개수"],
     column_config={
-        "열 이름": st.column_config.TextColumn(
-            "열 이름",
-        ),
+        "열 이름": st.column_config.TextColumn("열 이름"),
         "우리말 뜻": st.column_config.TextColumn(
             "우리말 뜻",
             help="교재를 참고하여 직접 입력하세요.",
         ),
-        "값의 종류": st.column_config.TextColumn(
-            "값의 종류",
-        ),
-        "빈 값 개수": st.column_config.NumberColumn(
-            "빈 값 개수",
-        ),
+        "값의 종류": st.column_config.TextColumn("값의 종류"),
+        "빈 값 개수": st.column_config.NumberColumn("빈 값 개수"),
     },
     key="column_info",
 )
@@ -257,6 +246,4 @@ if st.button("💾 내 기록 저장", type="primary"):
     )
 
 
-st.caption(
-    "데이터 출처: ghdwlswn814/data의 stroke.csv"
-)
+st.caption("데이터 출처: ghdwlswn814/data의 stroke.csv")
